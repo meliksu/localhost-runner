@@ -15,6 +15,21 @@ public actor PortScanner {
         self.portRange = portRange
     }
 
+    /// Known system/non-dev processes to filter out.
+    private static let ignoredProcesses: Set<String> = [
+        "controlce",  // AirPlay Receiver (ControlCenter)
+        "antivirus",  // Antivirus software
+        "rapportd",   // Apple Rapport daemon
+        "sharingd",   // Apple Sharing daemon
+        "httpd",      // System Apache
+        "launchd",    // System launcher
+    ]
+
+    /// Check if a process name is a known system process.
+    public static func isSystemProcess(_ processName: String) -> Bool {
+        ignoredProcesses.contains(processName.lowercased())
+    }
+
     /// Parse lsof output into port-PID entries using regex for robustness.
     public static func parseLsofOutput(_ output: String, portRange: ClosedRange<Int>) -> [PortPidEntry] {
         var seen = Set<Int>()
@@ -28,6 +43,9 @@ public actor PortScanner {
 
             let command = String(columns[0])
             guard let pid = Int(columns[1]) else { continue }
+
+            // Skip known system processes
+            guard !isSystemProcess(command) else { continue }
 
             let fullLine = String(line)
             guard let portMatch = fullLine.range(of: #":(\d+)\s+\(LISTEN\)"#, options: .regularExpression) else { continue }
@@ -81,6 +99,7 @@ public actor PortScanner {
     }
 
     /// Fetch the HTML title from a localhost URL with a short timeout.
+    /// Follows redirects automatically (e.g. / -> /login).
     private func fetchTitle(port: Int) async -> String? {
         guard let url = URL(string: "http://localhost:\(port)") else { return nil }
 
@@ -92,7 +111,7 @@ public actor PortScanner {
         do {
             let (data, response) = try await session.data(from: url)
             guard let httpResponse = response as? HTTPURLResponse,
-                  httpResponse.statusCode == 200 else { return nil }
+                  (200...399).contains(httpResponse.statusCode) else { return nil }
             guard let html = String(data: data, encoding: .utf8) else { return nil }
             return Self.parseTitleFromHTML(html)
         } catch {

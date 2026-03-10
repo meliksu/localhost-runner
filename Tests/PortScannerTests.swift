@@ -73,6 +73,31 @@ struct PortScannerParsingTests {
         #expect(results.count == 1)
         #expect(results[0].pid == 111)
     }
+
+    @Test("filters out known system processes like ControlCenter and Antivirus")
+    func filterSystemProcesses() {
+        let output = """
+        COMMAND     PID   USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+        ControlCe   637  user    8u  IPv4 0x1234   0t0  TCP *:7000 (LISTEN)
+        Antivirus   848  user   10u  IPv4 0x5678   0t0  TCP 127.0.0.1:8890 (LISTEN)
+        node      12345  user   20u  IPv6 0x9abc   0t0  TCP [::1]:5173 (LISTEN)
+        node      67890  user   13u  IPv6 0xdef0   0t0  TCP *:3000 (LISTEN)
+        """
+
+        let results = PortScanner.parseLsofOutput(output, portRange: 3000...9000)
+        #expect(results.count == 2)
+        #expect(results[0].port == 5173)
+        #expect(results[1].port == 3000)
+    }
+
+    @Test("isSystemProcess recognizes known processes")
+    func systemProcessCheck() {
+        #expect(PortScanner.isSystemProcess("ControlCe") == true)
+        #expect(PortScanner.isSystemProcess("Antivirus") == true)
+        #expect(PortScanner.isSystemProcess("rapportd") == true)
+        #expect(PortScanner.isSystemProcess("node") == false)
+        #expect(PortScanner.isSystemProcess("python") == false)
+    }
 }
 
 @Suite("PortScanner CWD Resolution")
