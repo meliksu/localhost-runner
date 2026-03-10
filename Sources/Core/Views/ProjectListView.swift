@@ -17,7 +17,9 @@ public struct ProjectListView: View {
                 EmptyStateView(message: "Scanning...")
             } else {
                 ForEach(viewModel.projects) { project in
-                    ProjectRowView(project: project)
+                    ProjectRowView(project: project, onKill: {
+                        viewModel.killProject(project)
+                    })
                         .onTapGesture {
                             viewModel.openInBrowser(project)
                         }
@@ -50,12 +52,7 @@ public struct ProjectListView: View {
                 Spacer()
 
                 Button(action: {
-                    NSApp.activate(ignoringOtherApps: true)
-                    if #available(macOS 14, *) {
-                        NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
-                    } else {
-                        NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
-                    }
+                    SettingsWindowController.shared.showSettings()
                 }) {
                     Label("Settings", systemImage: "gear")
                         .font(.system(size: 11))

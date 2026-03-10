@@ -18,10 +18,6 @@ struct LocalhostRunnerApp: App {
                 .foregroundColor(viewModel.projectCount > 0 ? .primary : .secondary)
         }
         .menuBarExtraStyle(.window)
-
-        Settings {
-            SettingsView()
-        }
     }
 
     private func registerLoginItemIfFirstLaunch() {

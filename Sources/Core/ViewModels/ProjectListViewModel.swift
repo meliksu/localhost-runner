@@ -76,5 +76,10 @@ public class ProjectListViewModel: ObservableObject {
         NSWorkspace.shared.open(project.url)
     }
 
+    public func killProject(_ project: LocalProject) {
+        kill(pid_t(project.pid), SIGTERM)
+        projects.removeAll { $0.id == project.id }
+    }
+
     public var projectCount: Int { projects.count }
 }
