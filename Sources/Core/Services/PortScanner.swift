@@ -153,7 +153,7 @@ public actor PortScanner {
             // Fall back to cwd folder name
             let cwdOutput = try? await executor.run(
                 lsofPath,
-                arguments: ["-p", "\(entry.pid)", "-d", "cwd", "-Fn"]
+                arguments: ["-p", "\(entry.pid)", "-a", "-d", "cwd", "-Fn"]
             )
             let cwd = cwdOutput.flatMap { Self.parseCwdFromLsofOutput($0) } ?? "/unknown"
 

@@ -1,1 +1,14 @@
+# Build artifacts
+.build/
+*.o
+*.swp
+
+# Xcode
+xcuserdata/
+*.xcscmblueprint
+
+# macOS
+.DS_Store
+
+# Superpowers
 .superpowers/
