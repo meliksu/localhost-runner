@@ -68,7 +68,40 @@ public actor PortScanner {
         case error(String)
     }
 
+    /// Extract `<title>` from HTML string.
+    public static func parseTitleFromHTML(_ html: String) -> String? {
+        guard let startRange = html.range(of: "<title>", options: .caseInsensitive),
+              let endRange = html.range(of: "</title>", options: .caseInsensitive),
+              startRange.upperBound < endRange.lowerBound else {
+            return nil
+        }
+        let title = String(html[startRange.upperBound..<endRange.lowerBound])
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return title.isEmpty ? nil : title
+    }
+
+    /// Fetch the HTML title from a localhost URL with a short timeout.
+    private func fetchTitle(port: Int) async -> String? {
+        guard let url = URL(string: "http://localhost:\(port)") else { return nil }
+
+        let config = URLSessionConfiguration.ephemeral
+        config.timeoutIntervalForRequest = 2
+        config.timeoutIntervalForResource = 2
+        let session = URLSession(configuration: config)
+
+        do {
+            let (data, response) = try await session.data(from: url)
+            guard let httpResponse = response as? HTTPURLResponse,
+                  httpResponse.statusCode == 200 else { return nil }
+            guard let html = String(data: data, encoding: .utf8) else { return nil }
+            return Self.parseTitleFromHTML(html)
+        } catch {
+            return nil
+        }
+    }
+
     /// Full scan: discover all projects listening on ports in range.
+    /// Uses HTML title as project name, falls back to process cwd folder name.
     public func scan() async -> ScanResult {
         let lsofPath = "/usr/sbin/lsof"
 
@@ -95,16 +128,20 @@ public actor PortScanner {
         var projects: [LocalProject] = []
 
         for entry in entries {
+            // Try HTML title first
+            let title = await fetchTitle(port: entry.port)
+
+            // Fall back to cwd folder name
             let cwdOutput = try? await executor.run(
                 lsofPath,
                 arguments: ["-p", "\(entry.pid)", "-d", "cwd", "-Fn"]
             )
-
             let cwd = cwdOutput.flatMap { Self.parseCwdFromLsofOutput($0) } ?? "/unknown"
 
             guard !Self.isSystemPath(cwd) else { continue }
 
             projects.append(LocalProject(
+                name: title,
                 port: entry.port,
                 pid: entry.pid,
                 processType: entry.processType,

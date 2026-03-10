@@ -102,3 +102,36 @@ struct PortScannerCwdTests {
         #expect(PortScanner.isSystemPath("/Users/me/Github/project") == false)
     }
 }
+
+@Suite("PortScanner HTML Title")
+struct PortScannerTitleTests {
+    @Test("extracts title from HTML")
+    func extractTitle() {
+        let html = "<html><head><title>My Cool App</title></head><body></body></html>"
+        #expect(PortScanner.parseTitleFromHTML(html) == "My Cool App")
+    }
+
+    @Test("handles uppercase TITLE tag")
+    func uppercaseTitle() {
+        let html = "<html><head><TITLE>Dashboard</TITLE></head></html>"
+        #expect(PortScanner.parseTitleFromHTML(html) == "Dashboard")
+    }
+
+    @Test("returns nil when no title tag")
+    func noTitle() {
+        let html = "<html><head></head><body>Hello</body></html>"
+        #expect(PortScanner.parseTitleFromHTML(html) == nil)
+    }
+
+    @Test("returns nil for empty title")
+    func emptyTitle() {
+        let html = "<html><head><title></title></head></html>"
+        #expect(PortScanner.parseTitleFromHTML(html) == nil)
+    }
+
+    @Test("trims whitespace from title")
+    func trimWhitespace() {
+        let html = "<title>  Lumaria Web  </title>"
+        #expect(PortScanner.parseTitleFromHTML(html) == "Lumaria Web")
+    }
+}
