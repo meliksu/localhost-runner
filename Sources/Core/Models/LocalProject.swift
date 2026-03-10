@@ -1,6 +1,6 @@
 import Foundation
 
-public struct LocalProject: Identifiable, Equatable, Hashable {
+public struct LocalProject: Identifiable, Equatable, Hashable, Sendable {
     public let name: String
     public let port: Int
     public let pid: Int
