@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "LocalhostRunner",
-    platforms: [.macOS(.v13)],
+    platforms: [.macOS(.v14)],
     targets: [
         .target(
             name: "LocalhostRunnerCore",
@@ -17,7 +17,13 @@ let package = Package(
         .testTarget(
             name: "LocalhostRunnerTests",
             dependencies: ["LocalhostRunnerCore"],
-            path: "Tests"
+            path: "Tests",
+            swiftSettings: [
+                .unsafeFlags([
+                    "-Xfrontend", "-plugin-path",
+                    "-Xfrontend", "/Library/Developer/CommandLineTools/usr/lib/swift/host/plugins"
+                ])
+            ]
         ),
     ]
 )
