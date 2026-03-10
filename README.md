@@ -13,6 +13,7 @@ If you're a developer running multiple projects at the same time — Next.js on 
 - **Auto-detects** all dev servers running on ports 3000–9000 (configurable)
 - **Shows project names** from the HTML `<title>` tag or the project folder name as fallback
 - **One click** to open any project in your default browser
+- **Stop servers** directly from the menu — kill any running project with one click
 - **Menu bar icon** shows how many projects are currently running
 - **Filters out** system processes (AirPlay, Antivirus, etc.) — only real dev servers
 - **Configurable** refresh interval (manual, 5s, 15s, or 30s)
@@ -47,7 +48,8 @@ Then open **Localhost Runner** from your Applications folder. You'll see a numbe
 1. **Start your dev servers** as usual (`npm run dev`, `python manage.py runserver`, etc.)
 2. **Click the number** in the menu bar to see all running projects
 3. **Click a project** to open it in your browser
-4. **Click Refresh** to manually re-scan (or set an auto-refresh interval in Settings)
+4. **Click the X** next to a project to stop the server
+5. **Click Refresh** to manually re-scan (or set an auto-refresh interval in Settings)
 
 ### Settings
 
